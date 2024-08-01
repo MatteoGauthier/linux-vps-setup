@@ -1,2 +1,2 @@
 run:
-	./hey.sh
+	./bootstrap.sh
