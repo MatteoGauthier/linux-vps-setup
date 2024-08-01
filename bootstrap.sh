@@ -59,3 +59,49 @@ mkdir -p btop-install/output
 wget -qO - https://github.com/aristocratos/btop/releases/latest/download/btop-x86_64-linux-musl.tbz | tar -xj -C btop-install/output
 (cd btop-install/output/btop && sudo make install && sudo make setuid)
 rm -rf btop-install
+
+####
+# Add git aliases to .gitconfig
+####
+git config --global alias.s status
+git config --global alias.a '!git add . && git status'
+git config --global alias.au '!git add -u . && git status'
+git config --global alias.aa '!git add . && git add -u . && git status'
+git config --global alias.c commit
+git config --global alias.cm 'commit -m'
+git config --global alias.ca 'commit --amend # careful'
+git config --global alias.cam 'commit -a -m # careful'
+git config --global alias.ac '!git add . && git commit'
+git config --global alias.acm '!git add . && git commit -m'
+git config --global alias.l 'log --graph --all --pretty=format:"%C(yellow)%h%C(cyan)%d%Creset %s %C(white)- %an, %ar%Creset"'
+git config --global alias.ll 'log --stat --abbrev-commit'
+git config --global alias.lg 'log --color --graph --pretty=format:"%C(bold white)%h%Creset -%C(bold green)%d%Creset %s %C(bold green)(%cr)%Creset %C(bold blue)<%an>%Creset" --abbrev-commit --date=relative'
+git config --global alias.llg 'log --color --graph --pretty=format:"%C(bold white)%H %d%Creset%n%s%n%+b%C(bold blue)%an <%ae>%Creset %C(bold green)%cr (%ci)" --abbrev-commit'
+git config --global alias.lllg 'log --graph --decorate --all --topo-order --date=format-local:"%Y-%m-%d %H:%M:%S" --pretty=format:"%C(cyan)%h%Creset %C(black bold)%ad%Creset%C(auto)%d %s"'
+git config --global alias.ai '!bun run /Users/matteogauthier/dev/quick-commit-ai/quick-commit-ai.ts'
+
+git config --global alias.d diff
+git config --global alias.master 'checkout master'
+git config --global alias.develop 'checkout develop'
+git config --global alias.prod 'checkout prod'
+git config --global alias.staging 'checkout staging'
+git config --global alias.main 'checkout main'
+git config --global alias.spull 'svn rebase'
+git config --global alias.spush 'svn dcommit'
+git config --global alias.alias '!git config --list | grep "alias\." | sed "s/alias\\.\\([^=]*\\)=\\(.*\\)/\\1\\\t => \\2/" | sort'
+git config --global alias.remotes 'remote -v'
+git config --global alias.co checkout
+git config --global alias.check checkout
+git config --global alias.ch checkout
+git config --global alias.cob 'checkout -b'
+git config --global alias.po 'pull origin'
+git config --global alias.pu '!git push origin $(git branch --show-current)'
+git config --global alias.rocket '!git push origin $(git branch --show-current)'
+git config --global alias.branchlog '!git for-each-ref --sort=committerdate refs/heads --format="%(authordate:short) %(color:red)%(objectname:short) %(color:yellow)%(refname:short)%(color:reset) (%(color:green)%(committerdate:relative)%(color:reset))"'
+git config --global alias.branchlog-desc '!git for-each-ref --sort=-committerdate refs/heads --format="%(authordate:short) %(color:red)%(objectname:short) %(color:yellow)%(refname:short)%(color:reset) (%(color:green)%(committerdate:relative)%(color:reset))"'
+git config --global alias.stats '!git --no-pager shortlog -s -n --all --no-merges'
+git config --global alias.statsbranch '!git --no-pager shortlog -s -n --no-merges'
+git config --global alias.statsloc '!git ls-files | while read f; do git blame -w -M -C -C --line-porcelain "$f" | grep -I "^author "; done | sort -f | uniq -ic | sort -n --reverse'
+git config --global alias.difforigin '!git diff origin/$(git branch --show-current)'
+git config --global alias.save-stash '!git stash show "stash@{0}" -p > stash_0.patch'
+git config --global alias.stash-name '!echo "./$(git stash list --format="%B" -n 1)"'
