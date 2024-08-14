@@ -60,6 +60,8 @@ wget -qO - https://github.com/aristocratos/btop/releases/latest/download/btop-x8
 (cd btop-install/output/btop && sudo make install && sudo make setuid)
 rm -rf btop-install
 
+echo "alias hyfetch='bash <(curl -sL nf.hydev.org)'" >> ~/.bashrc
+
 ####
 # Add git aliases to .gitconfig
 ####
@@ -105,3 +107,5 @@ git config --global alias.statsloc '!git ls-files | while read f; do git blame -
 git config --global alias.difforigin '!git diff origin/$(git branch --show-current)'
 git config --global alias.save-stash '!git stash show "stash@{0}" -p > stash_0.patch'
 git config --global alias.stash-name '!echo "./$(git stash list --format="%B" -n 1)"'
+
+source ~/.bashrc

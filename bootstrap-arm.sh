@@ -43,6 +43,7 @@ curl https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/i
 curl -LSfs https://raw.githubusercontent.com/Byron/dua-cli/master/ci/install.sh | \
     sh -s -- --git Byron/dua-cli --target aarch64-unknown-linux-musl --crate dua --tag v2.29.0
 echo 'export PATH="$HOME/.cargo/bin:$PATH"' >> ~/.bashrc && source ~/.bashrc
+export PATH="$HOME/.cargo/bin:$PATH"
 dua
 
 sudo apt install -y duf
@@ -59,6 +60,8 @@ mkdir -p btop-install/output
 wget -qO - https://github.com/aristocratos/btop/releases/latest/download/btop-aarch64-linux-musl.tbz | tar -xj -C btop-install/output
 (cd btop-install/output/btop && sudo make install && sudo make setuid)
 rm -rf btop-install
+
+echo "alias hyfetch='bash <(curl -sL nf.hydev.org)'" >> ~/.bashrc
 
 ####
 # Add git aliases to .gitconfig
@@ -105,3 +108,5 @@ git config --global alias.statsloc '!git ls-files | while read f; do git blame -
 git config --global alias.difforigin '!git diff origin/$(git branch --show-current)'
 git config --global alias.save-stash '!git stash show "stash@{0}" -p > stash_0.patch'
 git config --global alias.stash-name '!echo "./$(git stash list --format="%B" -n 1)"'
+
+source ~/.bashrc
