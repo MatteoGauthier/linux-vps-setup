@@ -2,10 +2,11 @@
 
 CURRENT_ARCH=$(uname -m)
 
-if [ "$CURRENT_ARCH" != "x86_64" ]; then
-  echo "This script is only for x86_64 machines"
+if [ "$CURRENT_ARCH" != "x86_64" ] && [ "$CURRENT_ARCH" != "aarch64" ]; then
+  echo "This script is only for x86_64 or aarch64 machines"
   exit 1
 fi
+
 
 # Update package lists
 sudo apt update -y
