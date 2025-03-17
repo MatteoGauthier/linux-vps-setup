@@ -1,5 +1,12 @@
 #!/bin/bash
 
+CURRENT_ARCH=$(uname -m)
+
+if [ "$CURRENT_ARCH" != "x86_64" ]; then
+  echo "This script is only for x86_64 machines"
+  exit 1
+fi
+
 # Update package lists
 sudo apt update -y
 
@@ -9,7 +16,7 @@ sudo apt install -y git curl
 ####
 # Install Docker
 ####
-for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt-get remove $pkg; done
+for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt-get remove -y $pkg; done
 
 # Add Docker's official GPG key:
 sudo apt-get update -y
@@ -21,46 +28,22 @@ sudo chmod a+r /etc/apt/keyrings/docker.asc
 # Add the repository to Apt sources:
 echo \
   "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
-  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
-  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" |
+  sudo tee /etc/apt/sources.list.d/docker.list >/dev/null
 sudo apt-get update -y
 
 sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
+# Install GitHub CLI
 
-####
-# Useful tools (https://gist.github.com/MatteoGauthier/4ba0dfab5bfaf0013cd7402a4373dc4f)
-# - fzf: A command-line fuzzy finder
-# - lazydocker: A simple terminal UI for both docker and docker-compose
-# - dua: Disk usage analyzer written in Rust
-# - duf: Disk usage/Free utility
-# - lazygit: A simple terminal UI for git commands
-# - bat: A cat(1) clone with wings
-####
-
-sudo apt install -y fzf
-curl https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh | bash
-curl -LSfs https://raw.githubusercontent.com/Byron/dua-cli/master/ci/install.sh | \
-    sh -s -- --git Byron/dua-cli --target x86_64-unknown-linux-musl --crate dua --tag v2.29.0
-echo 'export PATH="$HOME/.cargo/bin:$PATH"' >> ~/.bashrc && source ~/.bashrc
-dua
-
-sudo apt install -y duf
-LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
-curl -Lo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
-tar xf lazygit.tar.gz lazygit
-sudo install lazygit /usr/local/bin
-sudo apt install -y bat
-rm -rf lazygit.tar.gz lazygit
-
-echo "alias lg='lazygit'" >> ~/.bashrc
-
-mkdir -p btop-install/output
-wget -qO - https://github.com/aristocratos/btop/releases/latest/download/btop-x86_64-linux-musl.tbz | tar -xj -C btop-install/output
-(cd btop-install/output/btop && sudo make install && sudo make setuid)
-rm -rf btop-install
-
-echo "alias hyfetch='bash <(curl -sL nf.hydev.org)'" >> ~/.bashrc
+(type -p wget >/dev/null || (sudo apt update && sudo apt-get install wget -y)) &&
+  sudo mkdir -p -m 755 /etc/apt/keyrings &&
+  out=$(mktemp) && wget -nv -O$out https://cli.github.com/packages/githubcli-archive-keyring.gpg &&
+  cat $out | sudo tee /etc/apt/keyrings/githubcli-archive-keyring.gpg >/dev/null &&
+  sudo chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg &&
+  echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list >/dev/null &&
+  sudo apt update &&
+  sudo apt install gh -y
 
 ####
 # Add git aliases to .gitconfig
@@ -107,5 +90,49 @@ git config --global alias.statsloc '!git ls-files | while read f; do git blame -
 git config --global alias.difforigin '!git diff origin/$(git branch --show-current)'
 git config --global alias.save-stash '!git stash show "stash@{0}" -p > stash_0.patch'
 git config --global alias.stash-name '!echo "./$(git stash list --format="%B" -n 1)"'
+
+####
+# Useful tools (https://gist.github.com/MatteoGauthier/4ba0dfab5bfaf0013cd7402a4373dc4f)
+# - fzf: A command-line fuzzy finder
+# - lazydocker: A simple terminal UI for both docker and docker-compose
+# - dua: Disk usage analyzer written in Rust
+# - duf: Disk usage/Free utility
+# - lazygit: A simple terminal UI for git commands
+# - bat: A cat(1) clone with wings
+####
+
+sudo apt install -y fzf
+# Install lazydocker
+curl https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh | bash
+# Two times yes
+curl https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh | bash
+curl -LSfs https://raw.githubusercontent.com/Byron/dua-cli/master/ci/install.sh |
+  sh -s -- --git Byron/dua-cli --target $CURRENT_ARCH-unknown-linux-musl --crate dua --tag v2.29.0
+echo 'export PATH="$HOME/.cargo/bin:$PATH"' >>~/.bashrc && source ~/.bashrc
+dua
+
+sudo apt install -y duf
+
+# If arch is aarch64, use the arm64 version, otherwise use the x86_64 version
+LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
+if [ "$CURRENT_ARCH" = "aarch64" ]; then
+  LAZYGIT_ARCH="arm64"
+else
+  LAZYGIT_ARCH="x86_64"
+fi
+curl -Lo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_${LAZYGIT_ARCH}.tar.gz"
+tar xf lazygit.tar.gz lazygit
+sudo install lazygit /usr/local/bin
+sudo apt install -y bat
+rm -rf lazygit.tar.gz lazygit
+
+echo "alias lg='lazygit'" >>~/.bashrc
+
+mkdir -p btop-install/output
+wget -qO - https://github.com/aristocratos/btop/releases/latest/download/btop-${CURRENT_ARCH}-linux-musl.tbz | tar -xj -C btop-install/output
+(cd btop-install/output/btop && sudo make install && sudo make setuid)
+rm -rf btop-install
+
+echo "alias hyfetch='bash <(curl -sL nf.hydev.org)'" >>~/.bashrc
 
 source ~/.bashrc
