@@ -7,6 +7,11 @@ if [ "$CURRENT_ARCH" != "x86_64" ] && [ "$CURRENT_ARCH" != "aarch64" ]; then
   exit 1
 fi
 
+# Create ~/.local/bin directory and add it to PATH
+mkdir -p ~/.local/bin
+if ! grep -q "PATH=\"\$HOME/.local/bin:\$PATH\"" ~/.bashrc; then
+  echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+fi
 
 # Update package lists
 sudo apt update -y
