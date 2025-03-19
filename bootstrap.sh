@@ -130,6 +130,8 @@ curl -Lo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/lates
 tar xf lazygit.tar.gz lazygit
 sudo install lazygit /usr/local/bin
 sudo apt install -y bat
+mkdir -p ~/.local/bin
+ln -s /usr/bin/batcat ~/.local/bin/bat
 rm -rf lazygit.tar.gz lazygit
 
 echo "alias lg='lazygit'" >>~/.bashrc
